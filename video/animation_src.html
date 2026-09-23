@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Concept of digital twin: animation</title>
+<style>html,body{margin:0;background:#0b1220;overflow:hidden}svg{display:block}</style></head>
+<body>
+<svg id="s" width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg"></svg>
+<script>
+// Every frame is drawn by render(t) from the animation time t alone (0 to 90 s).
+// Captions show the spoken line, split into sentences timed by length within each scene window.
+const LINES = /*__LINES__*/;
+const DUR = 90;
+const F = "Carlito, 'DejaVu Sans', sans-serif";
+const C = { bg: '#0b1220', panel: '#121c2a', line: '#22324a', text: '#eef3f8', muted: '#8c9aab', cyan: '#3ad0f0', amber: '#ffb84d', green: '#46d69b', red: '#ff6b5b', violet: '#b18cff', steel: '#c9d3de' };
+
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const P = (t, a, b) => clamp((t - a) / (b - a));
+const E = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const EO = x => 1 - Math.pow(1 - clamp(x), 3);
+const lerp = (a, b, x) => a + (b - a) * x;
+const W = (t, a, b, f = 0.5) => P(t, a, a + f) * (1 - P(t, b - f, b));
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function T(x, y, s, o = {}) {
+  const op = o.op == null ? 1 : o.op; if (op <= 0.001) return '';
+  const lines = String(s).split('\n'), lh = o.lh || (o.size || 28) * 1.22;
+  return `<text x="${x}" y="${y}" font-family="${o.font || F}" font-size="${o.size || 28}" fill="${o.color || C.text}" font-weight="${o.weight || 400}" text-anchor="${o.a || 'start'}" opacity="${op}"${o.ls ? ` letter-spacing="${o.ls}"` : ''}${o.style ? ` font-style="${o.style}"` : ''}>` +
+    lines.map((l, i) => `<tspan x="${x}" dy="${i ? lh : 0}">${esc(l)}</tspan>`).join('') + '</text>';
+}
+const R = (x, y, w, h, c, o = {}) => `<rect x="${x}" y="${y}" width="${Math.max(0, w)}" height="${Math.max(0, h)}" rx="${o.rx || 0}" fill="${c}" opacity="${o.op == null ? 1 : o.op}"${o.stroke ? ` stroke="${o.stroke}" stroke-width="${o.sw || 2}"` : ''}${o.dash ? ` stroke-dasharray="${o.dash}"` : ''}/>`;
+const L = (x1, y1, x2, y2, c, w = 2, o = {}) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" opacity="${o.op == null ? 1 : o.op}"${o.dash ? ` stroke-dasharray="${o.dash}"` : ''} stroke-linecap="round"/>`;
+const G = (op, inner, tr = '') => op <= 0.001 ? '' : `<g opacity="${op}"${tr ? ` transform="${tr}"` : ''}>${inner}</g>`;
+const path = (pts, c, w = 3, o = {}) => `<path d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" opacity="${o.op == null ? 1 : o.op}"${o.dash ? ` stroke-dasharray="${o.dash}"` : ''}/>`;
+function arrow(x1, y1, x2, y2, c, w = 4, o = {}) {
+  const a = Math.atan2(y2 - y1, x2 - x1), h = 16;
+  return `<g opacity="${o.op == null ? 1 : o.op}">${L(x1, y1, x2 - Math.cos(a) * 6, y2 - Math.sin(a) * 6, c, w, { dash: o.dash })}<path d="M${x2} ${y2} L${x2 - h * Math.cos(a - 0.45)} ${y2 - h * Math.sin(a - 0.45)} L${x2 - h * Math.cos(a + 0.45)} ${y2 - h * Math.sin(a + 0.45)} Z" fill="${c}"/></g>`;
+}
+function dotOnLine(x1, y1, x2, y2, k, c, r = 7) { return `<circle cx="${lerp(x1, x2, k)}" cy="${lerp(y1, y2, k)}" r="${r}" fill="${c}"/>`; }
+
+// ------------------------------------------------------------------ icons
+function turbine(x, y, s, rot, col, wire, fillCol) {
+  const f = wire ? 'none' : (fillCol || col), sw = wire ? 2.2 : 0;
+  let g = `<g transform="translate(${x} ${y}) scale(${s})">`;
+  g += `<path d="M-5 0 L5 0 L2.6 -150 L-2.6 -150 Z" fill="${f}" stroke="${col}" stroke-width="${sw / s * 1.2}"/>`;
+  g += `<rect x="-6" y="-160" width="22" height="10" rx="3" fill="${f}" stroke="${col}" stroke-width="${sw / s * 1.2}"/>`;
+  for (let k = 0; k < 3; k++) {
+    const a = rot + k * 2.0944;
+    g += `<g transform="translate(-8 -155) rotate(${a * 180 / Math.PI})"><path d="M0 -3 C 8 -20, 5 -70, 1.5 -95 L-1.5 -95 C -4 -60, -6 -20, 0 -3 Z" fill="${f}" stroke="${col}" stroke-width="${sw / s * 1.2}"/></g>`;
+  }
+  g += `<circle cx="-8" cy="-155" r="4.5" fill="${wire ? C.bg : f}" stroke="${col}" stroke-width="${sw / s * 1.2 + (wire ? 0 : 0)}"/>`;
+  if (wire) for (let k = 1; k < 6; k++) g += `<line x1="${-5 + k * 0.4}" y1="${-k * 25}" x2="${5 - k * 0.4}" y2="${-k * 25}" stroke="${col}" stroke-width="${1.2 / s}" opacity=".6"/>`;
+  return g + '</g>';
+}
+function bridge(x, y, s, col, wire, sag = 0) {
+  const sw = 3 / s;
+  let g = `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round">`;
+  const deck = []; for (let i = 0; i <= 20; i++) { const u = i / 20; deck.push([-120 + 240 * u, -40 + sag * Math.sin(Math.PI * u)]); }
+  g += `<path d="${deck.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ')}" stroke-width="${sw * 2}"/>`;
+  g += `<path d="M-60 0 L-60 -110 M60 0 L60 -110"/>`;
+  for (let i = -5; i <= 5; i++) { if (!i) continue; const px = i < 0 ? -60 : 60, dx = i * 11; g += `<path d="M${px} -106 L${px + dx} ${-40 + sag * Math.sin(Math.PI * ((px + dx + 120) / 240))}" stroke-width="${sw * 0.6}" opacity="${wire ? .7 : .85}"/>`; }
+  g += `<path d="M-130 0 L130 0" opacity=".5"/>`;
+  return g + '</g>';
+}
+function engine(x, y, s, rot, col, wire) {
+  const sw = 3 / s;
+  let g = `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="${col}" stroke-width="${sw}">`;
+  g += `<path d="M-90 -50 C -60 -62, 60 -58, 100 -34 L100 34 C 60 58, -60 62, -90 50 Z" ${wire ? '' : `fill="${col}" fill-opacity=".14"`}/>`;
+  g += `<ellipse cx="-90" cy="0" rx="16" ry="50"/>`;
+  for (let k = 0; k < 8; k++) { const a = rot + k * Math.PI / 4; g += `<line x1="-90" y1="0" x2="${-90 + 14 * Math.cos(a)}" y2="${46 * Math.sin(a)}" stroke-width="${sw * 0.8}"/>`; }
+  g += `<path d="M100 -34 L130 -18 L130 18 L100 34"/>`;
+  if (wire) for (let k = -2; k <= 2; k++) g += `<line x1="-70" y1="${k * 18}" x2="95" y2="${k * 12}" opacity=".45" stroke-width="${sw * 0.5}"/>`;
+  return g + '</g>';
+}
+function gridBg(x, y, w, h, op) {
+  let g = ''; for (let i = 0; i <= w; i += 40) g += L(x + i, y, x + i, y + h, C.cyan, 1, { op: 0.08 * op }); for (let j = 0; j <= h; j += 40) g += L(x, y + j, x + w, y + j, C.cyan, 1, { op: 0.08 * op });
+  return g;
+}
+
+// ------------------------------------------------------------------ captions
+function sentences(s) { return s.match(/[^.?!]+[.?!]+(\s|$)/g) || [s]; }
+function captionAt(t) {
+  for (const [a, b, text] of LINES) {
+    if (t < a - 0.05 || t > b + 0.25) continue;
+    const ss = sentences(text), tot = ss.reduce((q, x) => q + x.length, 0);
+    let acc = 0;
+    for (const s of ss) {
+      const s0 = a + (b - a) * acc / tot, s1 = a + (b - a) * (acc + s.length) / tot;
+      if (t >= s0 && t < s1 + (s === ss[ss.length - 1] ? 0.25 : 0)) return { text: s.trim(), op: W(t, s0 - 0.1, s1 + 0.2, 0.18) };
+      acc += s.length;
+    }
+  }
+  return null;
+}
+function sentenceStart(lineIdx, k) { // start time of sentence k in line lineIdx
+  const [a, b, text] = LINES[lineIdx], ss = sentences(text), tot = ss.reduce((q, x) => q + x.length, 0);
+  let acc = 0; for (let i = 0; i < k; i++) acc += ss[i].length; return a + (b - a) * acc / tot;
+}
+function phraseStart(li, str) { const [a, b, text] = LINES[li], k = text.indexOf(str); return a + (b - a) * Math.max(0, k) / text.length; }
+function wrap(s, n) { const w = s.split(' '), out = []; let cur = ''; for (const x of w) { if ((cur + ' ' + x).trim().length > n) { out.push(cur.trim()); cur = x; } else cur += ' ' + x; } out.push(cur.trim()); return out.join('\n'); }
+
+// ------------------------------------------------------------------ scenes
+const CH = [['What is it?', 0, 20], ['Model · shadow · twin', 20, 34], ['Twin vs simulation', 34, 46], ['Physics first', 46, 62], ['Lifecycle', 62, 82], ['', 82, 90]];
+function chrome(t) {
+  let s = T(80, 72, 'CONCEPT OF DIGITAL TWIN', { size: 22, color: C.muted, weight: 700, ls: 3, op: P(t, 0.2, 1) });
+  const cap = captionAt(t);
+  if (cap) { const txt = wrap(cap.text, 78), n = txt.split('\n').length; s += G(cap.op, R(0, 948 - (n - 1) * 44, 1920, 92 + (n - 1) * 44, '#070c14', { op: .8 }) + T(960, 1004 - (n - 1) * 44, txt, { size: 38, a: 'middle', lh: 44 })); }
+  // chapter chips
+  const op = P(t, 1, 2) * (1 - P(t, 82, 83));
+  if (op > 0) {
+    let g = ''; let x = 1840;
+    for (let i = CH.length - 2; i >= 0; i--) {
+      const [n, a, b] = CH[i], on = t >= a && t < b, w = n.length * 10.5 + 28; x -= w;
+      g += R(x, 48, w - 8, 34, on ? C.cyan : 'none', { rx: 17, stroke: on ? C.cyan : C.line, sw: 1.5 }) + T(x + (w - 8) / 2, 71, n, { size: 17, a: 'middle', color: on ? '#04202a' : C.muted, weight: on ? 700 : 400 });
+    }
+    s += G(op, g);
+  }
+  return s;
+}
+
+function sceneA(t) { // 0 to 8: physical objects get living copies
+  const op = W(t, 0, 8.4, 0.5); if (op <= 0) return '';
+  let g = '';
+  g += T(960, 200, 'Every machine could have a living copy', { size: 60, a: 'middle', weight: 700, op: EO(P(t, 0.3, 1.2)) });
+  const objs = [[330, 'turbine', 150, 1.35, 720], [960, 'bridge', 125, 0.9, 640], [1590, 'engine', 120, 0.8, 560]];
+  objs.forEach(([x, kind, sep, sc, y], i) => {
+    const e = EO(P(t, 0.6 + i * 0.5, 1.5 + i * 0.5)), w = EO(P(t, 3.2 + i * 0.5, 4.6 + i * 0.5));
+    const rot = t * 1.2;
+    const phys = kind === 'turbine' ? turbine(x - sep * w, y, sc, rot, C.steel, false) : kind === 'bridge' ? bridge(x - sep * w, y, sc, C.steel, false) : engine(x - sep * w, y, sc, rot * 2, C.steel, false);
+    const twin = kind === 'turbine' ? turbine(x + sep, y, sc, rot, C.cyan, true) : kind === 'bridge' ? bridge(x + sep, y, sc, C.cyan, true) : engine(x + sep, y, sc, rot * 2, C.cyan, true);
+    g += G(e, phys);
+    g += G(w * 0.95, twin);
+    g += G(w, T(x - sep, 800, 'physical', { size: 24, a: 'middle', color: C.muted }) + T(x + sep, 800, 'virtual', { size: 24, a: 'middle', color: C.cyan }));
+    g += G(w, L(x - 24, 792, x + 24, 792, C.cyan, 2, { dash: '4 5' }));
+  });
+  return G(op, g);
+}
+
+function sceneB(t) { // 8 to 20: definition, three parts
+  const op = W(t, 8, 20.3, 0.5); if (op <= 0) return '';
+  let g = gridBg(1150, 250, 560, 560, 1);
+  const e1 = EO(P(t, 8.3, 9.3)), e2 = EO(P(t, 9.3, 10.3)), e3 = EO(P(t, phraseStart(1, 'It has three parts') - 0.3, phraseStart(1, 'It has three parts') + 0.9));
+  g += G(e1, R(210, 250, 560, 560, C.panel, { rx: 24 }) + turbine(490, 780, 1.6, t * 1.1, C.steel, false) + T(490, 300, 'Physical object', { size: 32, a: 'middle', weight: 700 }) + T(490, 338, 'one specific turbine, serial no. 0427', { size: 22, a: 'middle', color: C.muted }));
+  g += G(e2, R(1150, 250, 560, 560, 'none', { rx: 24, stroke: C.cyan, sw: 2 }) + turbine(1430, 780, 1.6, t * 1.1, C.cyan, true) + T(1430, 300, 'Virtual model', { size: 32, a: 'middle', weight: 700, color: C.cyan }) + T(1430, 338, 'geometry + physics + history', { size: 22, a: 'middle', color: C.muted }));
+  // connection
+  const k1 = (t * 0.6) % 1, k2 = (t * 0.6 + 0.5) % 1;
+  g += G(e3, arrow(790, 470, 1130, 470, C.cyan, 4) + arrow(1130, 590, 790, 590, C.green, 4) +
+    dotOnLine(790, 470, 1130, 470, k1, '#7ff3ff') + dotOnLine(1130, 590, 790, 590, k2, '#9ff0c8') +
+    T(960, 452, 'data', { size: 24, a: 'middle', color: C.cyan, weight: 700 }) + T(960, 630, 'decisions', { size: 24, a: 'middle', color: C.green, weight: 700 }) +
+    T(960, 700, 'Connection', { size: 32, a: 'middle', weight: 700 }) + T(960, 736, 'the third part', { size: 22, a: 'middle', color: C.muted }));
+  g += G(EO(P(t, 15, 16)), T(960, 870, 'Physical · virtual · connection   (Grieves & Vickers, 2017)', { size: 24, a: 'middle', color: C.muted }));
+  return G(op, g);
+}
+
+function sceneC(t) { // 20 to 34: model, shadow, twin
+  const op = W(t, 20, 34.3, 0.5); if (op <= 0) return '';
+  const rows = [
+    ['Digital model', 'manual', 'manual', C.muted, 'data moved by people'],
+    ['Digital shadow', 'auto', 'manual', C.amber, 'automatic one way: object → model'],
+    ['Digital twin', 'auto', 'auto', C.cyan, 'automatic both ways: model acts on object'],
+  ];
+  const starts = [sentenceStart(2, 0), sentenceStart(2, 1), sentenceStart(2, 2)];
+  let g = '';
+  rows.forEach(([name, fwd, back, col, sub], i) => {
+    const y = 250 + i * 215, e = EO(P(t, starts[i] - 0.2, starts[i] + 0.8));
+    const hi = t >= starts[i] ? 1 : 0.3;
+    let q = R(160, y, 1600, 180, C.panel, { rx: 20, stroke: i === 2 && t >= starts[2] ? C.cyan : 'none', sw: 2 });
+    q += T(210, y + 80, name, { size: 40, weight: 700, color: col }) + T(210, y + 122, sub, { size: 23, color: C.muted });
+    q += turbine(1010, y + 166, 0.6, t * 1.3, C.steel, false) + turbine(1600, y + 166, 0.6, t * 1.3, C.cyan, true);
+    const k = (t * 0.7 + i * 0.3) % 1;
+    q += fwd === 'auto' ? arrow(1080, y + 70, 1520, y + 70, C.cyan, 4) + dotOnLine(1080, y + 70, 1520, y + 70, k, '#7ff3ff') : arrow(1080, y + 70, 1520, y + 70, C.muted, 3, { dash: '10 10' }) + T(1300, y + 58, 'by hand', { size: 20, a: 'middle', color: C.muted });
+    q += back === 'auto' ? arrow(1520, y + 125, 1080, y + 125, C.green, 4) + dotOnLine(1520, y + 125, 1080, y + 125, k, '#9ff0c8') : arrow(1520, y + 125, 1080, y + 125, C.muted, 3, { dash: '10 10' }) + T(1300, y + 160, 'by hand', { size: 20, a: 'middle', color: C.muted });
+    g += G(e * hi, q, `translate(${(1 - e) * 60} 0)`);
+  });
+  g += G(EO(P(t, 30, 31)), T(1760, 912, 'Kritzinger et al., 2018', { size: 20, a: 'end', color: C.muted }));
+  return G(op, g);
+}
+
+function sceneD(t) { // 34 to 46: simulation vs twin
+  const op = W(t, 34, 46.3, 0.5); if (op <= 0) return '';
+  let g = '';
+  const s1 = sentenceStart(3, 1), s2 = sentenceStart(3, 2);
+  // simulation panel
+  const eL = EO(P(t, s1 - 0.4, s1 + 0.6));
+  let q = R(160, 220, 760, 620, C.panel, { rx: 22 }) + T(200, 280, 'Simulation', { size: 40, weight: 700 }) + T(200, 318, 'an experiment: set up, run, read, close', { size: 23, color: C.muted });
+  const run = P(t, s1 + 0.3, s1 + 2.8), pts = [];
+  for (let i = 0; i <= 100 * run; i++) { const u = i / 100; pts.push([220 + 640 * u, 640 - 190 * (1 - Math.exp(-4 * u)) * (1 + 0.15 * Math.sin(u * 20) * Math.exp(-3 * u))]); }
+  q += L(220, 660, 860, 660, C.line, 2) + (pts.length > 1 ? path(pts, C.steel, 3) : '');
+  const closed = P(t, s1 + 3.0, s1 + 3.5);
+  q += G(closed, R(600, 380, 240, 70, 'none', { rx: 10, stroke: C.red, sw: 4 }) + T(720, 427, 'FILE CLOSED', { size: 28, a: 'middle', color: C.red, weight: 700 }), `rotate(-8 720 415)`);
+  q += G(closed, T(540, 760, 'result archived · model forgotten', { size: 24, a: 'middle', color: C.muted }));
+  g += G(eL, q);
+  // twin panel
+  const eR = EO(P(t, s2 - 0.4, s2 + 0.6));
+  let r = R(1000, 220, 760, 620, C.panel, { rx: 22, stroke: C.cyan, sw: 2 }) + T(1040, 280, 'Digital twin', { size: 40, weight: 700, color: C.cyan }) + T(1040, 318, 'persistent: one identity, one history', { size: 23, color: C.muted });
+  r += R(1040, 345, 250, 40, 'rgba(58,208,240,.15)', { rx: 20 }) + T(1165, 373, 'ID  WTG-0427', { size: 22, a: 'middle', color: C.cyan, weight: 700 });
+  const span = P(t, s2, 46), N = 9;
+  for (let d = 0; d < N; d++) {
+    const x = 1060 + d * 78, on = span * N > d;
+    if (!on) continue;
+    const meas = 600 - 120 * (0.5 + 0.35 * Math.sin(d * 1.1)) , mod = meas + 8 * Math.sin(d * 3);
+    r += L(x, 660, x, 440, C.line, 1) + `<circle cx="${x}" cy="${meas}" r="7" fill="${C.amber}"/>` + `<circle cx="${x}" cy="${mod}" r="11" fill="none" stroke="${C.cyan}" stroke-width="3"/>`;
+    r += T(x, 690, `day ${d * 30}`, { size: 17, a: 'middle', color: C.muted });
+  }
+  r += T(1040, 750, '● measured', { size: 22, color: C.amber }) + T(1210, 750, '○ twin expects', { size: 22, color: C.cyan }) + T(1040, 800, 'checked against reality, again and again', { size: 24, color: C.text });
+  g += G(eR, r);
+  return G(op, g);
+}
+
+function sceneE(t) { // 46 to 62: physics first
+  const op = W(t, 46, 62.3, 0.5); if (op <= 0) return '';
+  let g = '';
+  const s1 = phraseStart(4, 'Its first data'), s2 = phraseStart(4, 'A solver'), tLoad2 = phraseStart(4, 'what if');
+  // blueprint
+  g += G(EO(P(t, 46.3, 47.3)), R(160, 220, 820, 640, '#0d1a2e', { rx: 22, stroke: C.line }) + gridBg(160, 220, 820, 640, 1.4) +
+    T(200, 280, 'Nothing built yet', { size: 38, weight: 700 }) + T(200, 318, 'Phase 0: only the design and the laws of nature', { size: 23, color: C.muted }));
+  // bridge deflects under load according to the solver
+  const tSim = Math.max(0, t - (s2 + 0.3)), what = t > tLoad2 ? 2 : 1;
+  const wn = 2 * Math.PI * 0.55, z = 0.08, wd = wn * Math.sqrt(1 - z * z);
+  const x = (tt, F) => F * (1 - Math.exp(-z * wn * tt) * (Math.cos(wd * tt) + z / Math.sqrt(1 - z * z) * Math.sin(wd * tt)));
+  const xNow = tSim <= 0 ? 0 : (t < tLoad2 ? x(tSim, 1) : x(tLoad2 - s2 - 0.3, 1) + x(t - tLoad2, 1));
+  g += G(EO(P(t, 46.5, 47.5)), bridge(570, 640, 2.2, C.cyan, true, 8 * xNow));
+  if (tSim > 0) g += G(1, `<rect x="540" y="${552 + 17.6 * xNow - 40}" width="60" height="36" rx="6" fill="${C.amber}"/>` + (what === 2 ? `<rect x="540" y="${552 + 17.6 * xNow - 80}" width="60" height="36" rx="6" fill="${C.red}"/>` : '') + T(620, 552 + 17.6 * xNow - 50, what === 2 ? 'load × 2' : 'load', { size: 22, color: what === 2 ? C.red : C.amber, weight: 700 }));
+  // constants of nature
+  const consts = [['g = 9.81 m/s²', 'gravity'], ['E = 210 GPa', 'stiffness of steel'], ['ρ = 7850 kg/m³', 'density of steel'], ['energy is conserved', 'first law']];
+  consts.forEach(([a, b], i) => {
+    const e = EO(P(t, s1 + i * 0.7, s1 + 0.6 + i * 0.7));
+    g += G(e, R(1040, 230 + i * 92, 340, 76, C.panel, { rx: 14, stroke: C.cyan, sw: 1.5 }) + T(1060, 270 + i * 92, a, { size: 28, weight: 700, color: C.cyan }) + T(1060, 297 + i * 92, b, { size: 19, color: C.muted }), `translate(${(1 - e) * 40} 0)`);
+  });
+  // equation + solver + response plot
+  const eq = EO(P(t, s2 - 0.3, s2 + 0.6));
+  g += G(eq, R(1410, 230, 350, 350, C.panel, { rx: 14 }) + T(1585, 290, 'solver', { size: 24, a: 'middle', color: C.muted }) +
+    T(1585, 360, 'm·ẍ + c·ẋ + k·x = F(t)', { size: 24, a: 'middle', weight: 700, font: "'DejaVu Serif', serif" }) +
+    T(1585, 420, `t = ${Math.max(0, tSim).toFixed(2)} s`, { size: 26, a: 'middle', color: C.cyan }) +
+    T(1585, 460, 'step Δt = 0.01 s', { size: 20, a: 'middle', color: C.muted }) +
+    `<circle cx="1585" cy="520" r="${12 + 5 * Math.abs(Math.sin(t * 8))}" fill="none" stroke="${C.cyan}" stroke-width="3" opacity="${tSim > 0 ? 1 : 0.3}"/>`);
+  // response plot
+  const pp = [], pp2 = [];
+  const x0 = 1040, x1 = 1760, yb = 830, sc = 60, Tspan = 6;
+  for (let i = 0; i <= 120; i++) {
+    const tt = i / 120 * Tspan; if (tt > tSim) break;
+    const tA = s2 + 0.3 + tt;
+    const xv = tA < tLoad2 ? x(tt, 1) : x(tLoad2 - s2 - 0.3, 1) + x(tA - tLoad2, 1);
+    pp.push([x0 + (x1 - x0) * tt / Tspan, yb - sc * xv]);
+  }
+  g += G(eq, L(x0, yb, x1, yb, C.line, 2) + T(x0, 640, 'deflection x(t), computed live', { size: 22, color: C.muted }) + (pp.length > 1 ? path(pp, C.cyan, 4) : ''));
+  g += G(P(t, tLoad2, tLoad2 + 0.4), T(x1, 640, 'what if the load doubles?', { size: 24, a: 'end', color: C.red, weight: 700 }));
+  return G(op, g);
+}
+
+function sceneF(t) { // 62 to 82: lifecycle
+  const op = W(t, 62, 82.3, 0.5); if (op <= 0) return '';
+  const ph = [
+    ['Phase 0', 'Design', 'Prototype twin (DTP)', 'physics + CAD, what-if tests', C.violet],
+    ['Phase 1', 'Build', 'Digital thread', 'design data drives the factory', C.amber],
+    ['Phase 2', 'Operate', 'Instance twin (DTI)', 'live sensors on one unit', C.cyan],
+    ['Phase 3', 'Fleet', 'Aggregate twin (DTA)', 'learning across many units', C.green],
+    ['Phase 4', 'Retire', 'End of life', 'reuse, recycle, lessons learned', C.steel],
+  ];
+  let g = T(960, 230, 'The digital twin lifecycle', { size: 50, a: 'middle', weight: 700, op: EO(P(t, 62.3, 63.2)) });
+  const x0 = 240, dx = 360, y = 470;
+  g += L(x0, y, x0 + dx * 4, y, C.line, 6);
+  const PS = ['Phase zero', 'Phase one', 'Phase two', 'Phase three', 'Phase four'].map(w => phraseStart(5, w));
+  ph.forEach(([p, stage, twin, desc, col], i) => { const on = P(t, PS[i] - 0.2, PS[i] + 0.5); if (i && on > 0) g += L(x0 + (i - 1) * dx, y, lerp(x0 + (i - 1) * dx, x0 + i * dx, on), y, col, 6); });
+  ph.forEach(([p, stage, twin, desc, col], i) => {
+    const s = PS[i], on = P(t, s - 0.2, s + 0.5), x = x0 + i * dx;
+    const now = t >= s && (i === 4 || t < PS[i + 1]);
+    g += `<circle cx="${x}" cy="${y}" r="${now ? 40 : 30}" fill="${on > 0.5 ? col : C.panel}" stroke="${col}" stroke-width="4" opacity="${0.35 + 0.65 * on}"/>`;
+    g += T(x, y + 10, String(i), { size: 30, a: 'middle', weight: 700, color: on > 0.5 ? '#0b1220' : col, op: 0.4 + 0.6 * on });
+    g += G(0.3 + 0.7 * on, T(x, y - 70, `${p} · ${stage}`, { size: 28, a: 'middle', weight: 700, color: col }) +
+      T(x, y + 95, twin, { size: 25, a: 'middle', weight: 700 }) + T(x, y + 130, desc, { size: 21, a: 'middle', color: C.muted }));
+    const pic = i === 0 ? turbine(x, y + 290, 0.46, t, C.violet, true) : i === 1 ? `<g>${R(x - 60, y + 180, 120, 100, 'none', { rx: 8, stroke: C.amber })}${L(x - 40, y + 212, x + 40, y + 212, C.amber, 3)}${L(x - 40, y + 236, x + 18, y + 236, C.amber, 3)}${L(x - 40, y + 260, x + 30, y + 260, C.amber, 3)}</g>` :
+      i === 2 ? turbine(x, y + 290, 0.46, t * 1.4, C.cyan, false) : i === 3 ? [-60, 0, 60].map(o => turbine(x + o, y + 290, 0.36, t * 1.3 + o, C.green, false)).join('') : turbine(x, y + 290, 0.46, 0.4, C.steel, true);
+    g += G(EO(on) * 0.9, pic);
+  });
+  const fb = phraseStart(5, 'and its lessons'), back = P(t, fb, fb + 1.6);
+  if (back > 0) {
+    const yb = y + 355, xa = x0 + 4 * dx, pts = [[xa, y + 310], [xa, yb], [x0, yb], [x0, y + 318]];
+    const segs = [yb - (y + 310), xa - x0, yb - (y + 318)], tot = segs[0] + segs[1] + segs[2]; let rem = back * tot; const out = [pts[0]];
+    for (let k = 0; k < 3 && rem > 0; k++) { const f = Math.min(1, rem / segs[k]); out.push([lerp(pts[k][0], pts[k + 1][0], f), lerp(pts[k][1], pts[k + 1][1], f)]); rem -= segs[k]; }
+    g += path(out, C.violet, 4, { dash: '12 8' });
+    if (back >= 1) g += arrow(x0, y + 330, x0, y + 312, C.violet, 4);
+    g += G(P(t, fb + 1.2, fb + 1.7), T(960, yb + 40, 'lessons flow back into the next design', { size: 26, a: 'middle', color: C.violet, weight: 700 }));
+  }
+  return G(op, g);
+}
+
+function sceneG(t) { // 82 to 90: close
+  const op = P(t, 82.2, 83) * (1 - P(t, 89.6, 90)); if (op <= 0) return '';
+  let g = turbine(620, 760, 1.25, t * 1.1, C.steel, false) + turbine(1300, 760, 1.25, t * 1.1, C.cyan, true);
+  g += G(EO(P(t, 82.4, 83.4)), T(960, 280, 'Physics gives the twin its first life.', { size: 54, a: 'middle', weight: 700 }));
+  g += G(EO(P(t, phraseStart(6, 'Data keeps') - 0.2, phraseStart(6, 'Data keeps') + 0.8)), T(960, 355, 'Data keeps it honest.', { size: 54, a: 'middle', weight: 700, color: C.cyan }));
+  const k = (t * 0.6) % 1;
+  g += G(EO(P(t, 84.5, 85.5)), arrow(790, 520, 1130, 520, C.cyan, 4) + arrow(1130, 580, 790, 580, C.green, 4) + dotOnLine(790, 520, 1130, 520, k, '#7ff3ff') + dotOnLine(1130, 580, 790, 580, k, '#9ff0c8'));
+  g += G(EO(P(t, 86, 87)), T(960, 815, 'rajan56.github.io/concept-of-digital-twin', { size: 36, a: 'middle', weight: 700, color: '#7fb3f0' }) + T(960, 860, 'Rajan Kumar V K · D.Sc. Industrial Engineering and Management', { size: 24, a: 'middle', color: C.muted }));
+  return G(op, g);
+}
+
+function render(t) {
+  const fade = P(t, 0, 0.4) * (1 - P(t, DUR - 0.4, DUR));
+  document.getElementById('s').innerHTML = R(0, 0, 1920, 1080, C.bg) +
+    `<radialGradient id="rg" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#14233a"/><stop offset="1" stop-color="${C.bg}"/></radialGradient>` + R(0, 0, 1920, 1080, 'url(#rg)') +
+    G(fade, sceneA(t) + sceneB(t) + sceneC(t) + sceneD(t) + sceneE(t) + sceneF(t) + sceneG(t) + chrome(t));
+}
+window.render = render;
+const q = new URLSearchParams(location.search);
+if (q.has('t')) render(parseFloat(q.get('t')));
+else if (!q.has('static')) { const t0 = performance.now(); (function loop() { render(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })(); }
+</script></body></html>

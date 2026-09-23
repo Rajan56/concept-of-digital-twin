@@ -1,0 +1,9 @@
+[
+ [0.4, 7.6, "A wind turbine, a bridge, a jet engine. Imagine each had a living copy inside a computer, obeying the same physics."],
+ [8.3, 19.5, "That copy is a digital twin: a virtual model of one specific physical thing, linked to it by data throughout its life. It has three parts: the object, the model, and the connection."],
+ [20.3, 33.5, "If data moves by hand, it is only a digital model. If data flows automatically from object to model, it is a digital shadow. It becomes a twin when information also flows back and acts on the object."],
+ [34.3, 45.5, "So how is that different from a simulation? A simulation is an experiment you run and close. A twin persists, with one identity and one history, checked against reality again and again."],
+ [46.3, 61.5, "Even before anything is built, the twin can work. Its first data are the laws of nature: gravity, the stiffness of steel, the conservation of energy. A solver steps these equations through time, so engineers can ask: what if the load doubles?"],
+ [62.3, 81.5, "Now the lifecycle. Phase zero: the prototype twin designs the product. Phase one: the digital thread builds it. Phase two: the instance twin runs it with live sensors. Phase three: the aggregate twin learns from the fleet. Phase four: it retires, and its lessons shape the next design."],
+ [82.3, 89.6, "Physics gives the twin its first life. Data keeps it honest. Now explore it for yourself."]
+]
