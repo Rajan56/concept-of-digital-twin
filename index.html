@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept of Digital Twin</title>
+<meta name="description" content="Teaching material on digital twins for bachelor's, master's and doctoral students: definition, technology, model vs shadow vs twin, twin vs simulation, physics-based twins before a prototype exists, the lifecycle from Phase 0 to Phase 4, and a live physics lab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top">Concept of Digital Twin</a>
+    <ul>
+      <li><a class="l" href="#what">What is it?</a></li>
+      <li><a class="l" href="#tech">Technology</a></li>
+      <li><a class="l" href="#mst">Model · shadow · twin</a></li>
+      <li><a class="l" href="#sim">vs simulation</a></li>
+      <li><a class="l" href="#physics">Physics first</a></li>
+      <li><a class="l" href="#lab">Live lab</a></li>
+      <li><a class="l" href="#lifecycle">Lifecycle</a></li>
+      <li><a class="l" href="#maturity">Maturity</a></li>
+      <li><a class="l" href="#check">Check yourself</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="kicker">Teaching material</div>
+    <h1>Concept of Digital Twin</h1>
+    <p class="lead">What a digital twin is, how it differs from a simulation, why a physics-based model can already act as a twin before anything is built, and how a twin lives through five phases, from design to retirement.</p>
+    <div class="levels"><span class="chip">Bachelor's</span><span class="chip">Master's</span><span class="chip">Doctoral</span><span class="chip">90-second video + interactive lab</span></div>
+
+    <div class="video-card">
+      <video id="vid" controls preload="metadata" playsinline poster="media/poster.jpg">
+        <source src="media/concept_of_digital_twin.mp4" type="video/mp4">
+        <track kind="captions" src="media/captions.vtt" srclang="en" label="English">
+      </video>
+      <div class="chapters" id="chapters">
+        <span>Jump to:</span>
+        <button data-t="0">Opening</button>
+        <button data-t="9.3">What is it?</button>
+        <button data-t="21.7">Model · shadow · twin</button>
+        <button data-t="36.2">Twin vs simulation</button>
+        <button data-t="48.8">Physics first</button>
+        <button data-t="65.0">Lifecycle</button>
+        <button data-t="85.0">Summary</button>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:10px">Narrated in British English, with captions. Each part of the video is explained in more depth below, and every diagram on this page can be clicked.</p>
+  </div>
+</header>
+
+<main>
+
+<!-- 1 -->
+<section id="what">
+  <div class="wrap">
+    <div class="kicker">1 · Foundations</div>
+    <h2>What is a digital twin?</h2>
+    <p class="def">A digital twin is a virtual representation of one specific physical thing, connected to it by data throughout its life, so that the virtual side can explain, predict and improve what happens on the physical side.</p>
+    <p>The idea goes back to Michael Grieves' product lifecycle management lectures in the early 2000s. NASA and the U.S. Air Force made it widely known when they described a twin of an aircraft that would mirror the life of its flying counterpart (Glaessgen &amp; Stargel, 2012). Grieves and Vickers (2017) describe three parts. Click each one:</p>
+
+    <div class="parts" role="tablist">
+      <button class="part on" data-part="phys" role="tab">
+        <span class="t">Physical object</span><span class="s">one real asset, e.g. turbine serial no. 0427</span>
+        <svg width="110" height="96" viewBox="0 0 110 96" aria-hidden="true"><path d="M53 94 L57 94 L56 40 L54 40 Z" fill="#c9d3de"/><g transform="translate(55 38)"><path d="M0 0 L3 -36 L-1 -36 Z" fill="#c9d3de"/><path d="M0 0 L3 -36 L-1 -36 Z" fill="#c9d3de" transform="rotate(120)"/><path d="M0 0 L3 -36 L-1 -36 Z" fill="#c9d3de" transform="rotate(240)"/><circle r="4" fill="#c9d3de"/></g></svg>
+      </button>
+      <button class="part conn" data-part="conn" role="tab">
+        <svg width="140" height="54" viewBox="0 0 140 54" aria-hidden="true"><path d="M8 16 H124" stroke="#3ad0f0" stroke-width="3"/><path d="M132 16 l-10 -6 v12 z" fill="#3ad0f0"/><path d="M132 40 H16" stroke="#46d69b" stroke-width="3"/><path d="M8 40 l10 -6 v12 z" fill="#46d69b"/></svg>
+        <span class="t">Connection</span><span class="s">data in, decisions out</span>
+      </button>
+      <button class="part" data-part="virt" role="tab">
+        <span class="t cyan">Virtual model</span><span class="s">geometry + physics + history</span>
+        <svg width="110" height="96" viewBox="0 0 110 96" aria-hidden="true"><path d="M53 94 L57 94 L56 40 L54 40 Z" fill="none" stroke="#3ad0f0" stroke-width="1.5"/><g transform="translate(55 38)" fill="none" stroke="#3ad0f0" stroke-width="1.5"><path d="M0 0 L3 -36 L-1 -36 Z"/><path d="M0 0 L3 -36 L-1 -36 Z" transform="rotate(120)"/><path d="M0 0 L3 -36 L-1 -36 Z" transform="rotate(240)"/><circle r="4"/></g></svg>
+      </button>
+    </div>
+    <div class="card detail" id="partDetail"></div>
+
+    <div class="grid3" style="margin-top:22px">
+      <div class="card"><h3>One specific thing</h3><p>A twin belongs to one serial number, one building or one patient, not to a product type. Two turbines of the same model have two twins, because they stand in different winds and wear differently.</p></div>
+      <div class="card"><h3>For its whole life</h3><p>The twin is not built for a single study and then archived. It keeps a history: how the object was designed, built, operated, repaired and changed.</p></div>
+      <div class="card"><h3>To support decisions</h3><p>A twin earns its cost only when it changes a decision: when to service, how to operate, what to design next. A copy that nobody acts on is only a picture.</p></div>
+    </div>
+    <p class="note" style="margin-top:20px"><b>A broader definition.</b> The U.S. National Academies (2024) describe a digital twin as a set of virtual information constructs that mimics a physical system, is updated dynamically with data from it, has a predictive capability and informs decisions that realise value. They stress that the two-way interaction between virtual and physical is central.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="tech">
+  <div class="wrap">
+    <div class="kicker">2 · Digital twin technology</div>
+    <h2>What technology makes a twin work?</h2>
+    <p>"Digital twin" is the concept. <b>Digital twin technology</b> is the chain of hardware and software that keeps the virtual model in step with the real object and carries decisions back. No single product does all of it. Click a layer to see what it does and which methods it uses.</p>
+    <div class="stack">
+      <div class="layers" id="layers"></div>
+      <div class="card layer-detail" id="layerDetail"></div>
+    </div>
+    <p class="flowline">Data flows up the stack from the object to the model. Decisions flow back down to the object. Remove the top layer and you have a monitoring system; remove the bottom one and you have a simulation.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="mst">
+  <div class="wrap">
+    <div class="kicker">3 · A precise vocabulary</div>
+    <h2>Digital model, digital shadow, digital twin</h2>
+    <p>Many things called "digital twins" are not. Kritzinger et al. (2018) proposed a simple test: <b>how does data move between the object and the model, and is it automatic?</b> Switch between the three levels.</p>
+    <div class="seg" id="mstSeg"><button data-k="model" class="on">Digital model</button><button data-k="shadow">Digital shadow</button><button data-k="twin">Digital twin</button></div>
+    <div class="mst">
+      <svg id="mstSvg" viewBox="0 0 900 260" role="img" aria-label="Data flows between physical object and virtual model"></svg>
+      <div class="mst-text card" id="mstText"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="sim">
+  <div class="wrap">
+    <div class="kicker">4 · A common confusion</div>
+    <h2>How is a twin different from a simulation?</h2>
+    <p>Both use models and both answer "what happens if…?". The difference is not the mathematics. It is <b>what the model is tied to, and how long it lives</b>.</p>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th></th><th>Simulation model</th><th class="cyan">Digital twin</th></tr></thead>
+        <tbody>
+          <tr><td>What it represents</td><td>A class of objects or a design idea ("a 5 MW turbine")</td><td>One identified object ("turbine WTG-0427 at site B")</td></tr>
+          <tr><td>Lifespan</td><td>One study: set up, run, read, close</td><td>Persistent: lives as long as the object, often longer</td></tr>
+          <tr><td>Inputs</td><td>Assumed scenarios chosen by the analyst</td><td>Laws of physics plus the object's own measured data</td></tr>
+          <tr><td>Relation to reality</td><td>Validated once, then trusted</td><td>Checked against reality again and again, and recalibrated</td></tr>
+          <tr><td>Memory</td><td>None between runs</td><td>A history: as-designed, as-built, as-operated, as-maintained</td></tr>
+          <tr><td>Direction of information</td><td>Model → report → people</td><td>Object ⇄ model, with decisions returning to the object</td></tr>
+          <tr class="hl"><td>Typical question</td><td>"Will this design survive a 50-year storm?"</td><td>"Given what this turbine has lived through, when will its main bearing fail, and what should we do today?"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:18px"><b>They are not rivals.</b> A twin <i>runs</i> simulations all the time. Simulation is one of the twin's tools; the twin adds identity, memory and a live connection. A good way to put it: a simulation is a question you ask once; a twin is a model that keeps answering as the object changes.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="physics">
+  <div class="wrap">
+    <div class="kicker">5 · Phase 0: physics first</div>
+    <h2>Why can a model be a twin before anything is built?</h2>
+    <p>Before a turbine, bridge or engine exists, there is no sensor data. Yet engineers already test it virtually in storms, overloads and failures. This works because the model's first "data" are not measurements but <b>the laws of nature and the constants they contain</b>. A physics-based model does not look up answers; it computes them, step by step, from principles that hold everywhere.</p>
+    <div class="chain">
+      <div class="card"><div class="n">1 · CONSTANTS</div><div class="eq">g = 9.81 m/s²<br>E<sub>steel</sub> ≈ 210 GPa<br>ρ<sub>steel</sub> ≈ 7850 kg/m³</div><p class="small muted">Measured once by science, valid for every object made of that material.</p></div>
+      <div class="card"><div class="n">2 · LAWS</div><div class="eq">F = m·a<br>energy is conserved</div><p class="small muted">Conservation of mass, momentum and energy; constitutive laws such as Hooke's law.</p></div>
+      <div class="card"><div class="n">3 · EQUATIONS</div><div class="eq">m·ẍ + c·ẋ + k·x = F(t)</div><p class="small muted">Laws applied to the design's geometry give differential equations, often partial differential equations over space and time.</p></div>
+      <div class="card"><div class="n">4 · SOLVER</div><div class="eq">x<sub>n+1</sub> = x<sub>n</sub> + Δt · …</div><p class="small muted">A numerical solver (finite elements, finite volumes, time stepping) advances the state in small steps, so conditions can change during the run.</p></div>
+    </div>
+    <p>Because the solver steps through time, the environment can be dynamic: wind can gust, a load can double halfway through, a support can settle. That is why the model can answer <b>what-if questions in a changing environment</b> long before a prototype exists. Try it in the live lab below.</p>
+
+    <h3 style="margin-top:28px">Is it really a "twin" yet? Two scholarly views</h3>
+    <div class="debate">
+      <div class="card"><h3 class="violet">Yes: the Digital Twin Prototype</h3><p>Grieves and Vickers (2017) include a <b>Digital Twin Prototype (DTP)</b>: the designs, analyses and processes needed to realise a product, created <i>before</i> the physical product exists. In this view the twin is born first and the physical object is later "made to match" it.</p></div>
+      <div class="card"><h3 class="amber">Not yet: it is a digital model</h3><p>In the stricter classification of Kritzinger et al. (2018), a model with no automatic data link to a real object is a <b>digital model</b>. By that test, the Phase 0 model becomes a shadow and then a twin only once the built object is connected.</p></div>
+    </div>
+    <p class="note" style="margin-top:16px"><b>How to reconcile them.</b> At Phase 0, the virtual half of the twin exists and already does useful work, while the physical half and the connection do not exist yet. Calling it a twin is justified when the model is built to <i>become</i> the twin of the object that will be produced: same identity, same equations, same data structures, carried forward by the digital thread. In an exam or a thesis, say which definition you use. Students who can explain both views, and why they differ, understand the concept.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="lab">
+  <div class="wrap">
+    <div class="kicker">6 · Live lab</div>
+    <h2>Part A: a physics-based twin before the bridge is built</h2>
+    <p>A 40 m bridge girder, reduced to its first bending mode: one mass, one spring, one damper. The stiffness comes from beam theory, k = 48·E·I / L³, and the solver integrates the equation of motion with a fourth-order Runge-Kutta scheme at Δt = 5 ms, live in your browser. Change the design, then ask what-if questions.</p>
+    <div class="lab">
+      <div class="controls">
+        <div class="ctl"><label>Material <b id="vMat"></b></label><select id="mat"><option value="steel">Steel (E 210 GPa)</option><option value="alu">Aluminium (E 70 GPa)</option><option value="conc">Concrete (E 35 GPa)</option></select></div>
+        <div class="ctl"><label>Span L <b id="vSpan"></b></label><input id="span" type="range" min="20" max="60" step="1" value="40"></div>
+        <div class="ctl"><label>Truck load <b id="vLoad"></b></label><input id="load" type="range" min="10" max="300" step="5" value="100"></div>
+        <div class="ctl"><label>Damping ratio ζ <b id="vDamp"></b></label><input id="damp" type="range" min="0.01" max="0.2" step="0.01" value="0.05"></div>
+        <div class="ctl"><label>Load arrives</label><select id="arrive"><option value="ramp">gradually (truck drives on, 2 s)</option><option value="step">suddenly (dropped load)</option></select></div>
+        <div class="btns"><button class="btn primary" id="aRun">Apply load</button><button class="btn warn" id="aDouble" disabled>What if the load doubles?</button><button class="btn" id="aReset">Reset</button></div>
+        <p class="small muted" style="margin:14px 0 0">Illustrative section: I = 0.05 m⁴, area 0.8 m², deck 12 t/m. Deflection limit L/300, for teaching only.</p>
+      </div>
+      <div class="viz">
+        <canvas id="aBridge" height="210"></canvas>
+        <canvas id="aPlot" height="230" style="margin-top:10px"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Natural frequency</span><b id="aF">–</b></div>
+          <div class="ro"><span>Static deflection</span><b id="aS">–</b></div>
+          <div class="ro" id="aPkBox"><span>Peak deflection</span><b id="aPk">–</b></div>
+          <div class="ro"><span>Solver</span><b id="aT">t = 0.0 s</b></div>
+        </div>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:12px">Things to try: a sudden load gives almost twice the static deflection (dynamic amplification). Doubling the span divides the stiffness by eight. Switching to aluminium with the same section triples the deflection. None of this needed a prototype.</p>
+
+    <h2 style="margin-top:46px">Part B: connect the sensors, from model to twin</h2>
+    <p>The bridge is now built. Trucks cross it every 10 seconds and a weigh-in-motion sensor reports each truck's weight. The <span class="amber">physical bridge</span> below has its own true stiffness, which the model cannot see. Follow the steps and watch the status change from digital model to shadow to twin.</p>
+    <div class="lab">
+      <div class="controls">
+        <div style="margin-bottom:12px">Status: <span class="status" id="bStatus">Digital model</span></div>
+        <ol class="steps" id="bSteps">
+          <li class="now">Connect the sensors. Measured deflection streams into the model automatically.</li>
+          <li>Hidden damage: corrosion takes 20 % of the stiffness. The model is not told.</li>
+          <li>Recalibrate: estimate the stiffness from measured deflection under known truck weights.</li>
+          <li>Close the loop: the twin sets a safe load limit on the real bridge.</li>
+        </ol>
+        <div class="btns">
+          <button class="btn primary" id="bConnect">1 · Connect sensors</button>
+          <button class="btn warn" id="bDamage" disabled>2 · Corrode the bridge</button>
+          <button class="btn" id="bCal" disabled>3 · Recalibrate twin</button>
+          <button class="btn" id="bAct" disabled>4 · Send decision back</button>
+          <button class="btn" id="bReset">Reset</button>
+        </div>
+        <div class="log" id="bLog"><div class="muted">Event log. The model is running with its design stiffness and no data.</div></div>
+      </div>
+      <div class="viz">
+        <canvas id="bBridge" height="190"></canvas>
+        <canvas id="bPlot" height="250" style="margin-top:10px"></canvas>
+        <div class="readouts">
+          <div class="ro"><span>Twin stiffness</span><b id="bK">–</b></div>
+          <div class="ro" id="bResBox"><span>Residual (RMS)</span><b id="bRes">–</b></div>
+          <div class="ro"><span>Truck on bridge</span><b id="bTruck">–</b></div>
+          <div class="ro" id="bPkBox"><span>Peak, last crossing</span><b id="bPk">–</b></div>
+        </div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:16px"><b>What just happened.</b> With sensors connected, data flowed automatically from object to model: a digital shadow. The <i>residual</i>, the gap between what the physics predicts and what is measured, revealed damage nobody had reported. Recalibration made the model true to <i>this</i> bridge again. Only when the model's conclusion (a load limit) flowed back and changed the real bridge did it become a digital twin in the strict sense.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="lifecycle">
+  <div class="wrap">
+    <div class="kicker">7 · The lifecycle</div>
+    <h2>Five phases in the life of a twin</h2>
+    <p>The twin is born before the object and outlives it. Grieves and Vickers (2017) name three forms: the prototype (DTP), the instance (DTI) and the aggregate (DTA). The five phases below are a teaching framework built around those forms, using a wind turbine as the running example. Click a phase.</p>
+    <div class="timeline" id="timeline"></div>
+    <div class="card phase-detail" id="phaseDetail"></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="maturity">
+  <div class="wrap">
+    <div class="kicker">8 · How capable is a twin?</div>
+    <h2>Levels of maturity</h2>
+    <p>Twins grow in capability. A common way to describe this, used widely in industry and teaching, is a ladder of the questions the twin can answer. Each level builds on the one below. Click a level.</p>
+    <div class="grid2">
+      <div class="ladder" id="ladder"></div>
+      <div class="card" id="ladderDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="myths">
+  <div class="wrap">
+    <div class="kicker">9 · Misconceptions</div>
+    <h2>Six things a digital twin is not</h2>
+    <div class="myths" id="mythList"></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="check">
+  <div class="wrap">
+    <div class="kicker">10 · Check your understanding</div>
+    <h2>Quick quiz</h2>
+    <div class="quiz" id="quiz"></div>
+    <p class="score" id="score"></p>
+
+    <h2 style="margin-top:40px">Questions for discussion</h2>
+    <ul class="discuss">
+      <li><span class="lvl b">Bachelor's</span>Pick an everyday object (a lift, a bicycle, a heat pump). What would its physical part, virtual part and connection be? Which decisions could the twin improve?</li>
+      <li><span class="lvl b">Bachelor's</span>A company shows a 3D model of its factory that updates once a month from spreadsheets. Is it a model, a shadow or a twin? Why?</li>
+      <li><span class="lvl m">Master's</span>At what point in the lifecycle does a Phase 0 model become a twin? Defend your answer using both Grieves and Vickers (2017) and Kritzinger et al. (2018).</li>
+      <li><span class="lvl m">Master's</span>In the live lab, the twin detected damage from a stiffness change. Which other failure modes would produce no residual in deflection, and what sensors would you add?</li>
+      <li><span class="lvl d">Doctoral</span>How should uncertainty in the model (parameters, model form, sensor noise) be quantified and carried into the decisions a twin recommends? Discuss Bayesian calibration and data assimilation.</li>
+      <li><span class="lvl d">Doctoral</span>Physics-based models are trustworthy but slow; data-driven models are fast but can fail outside their training data. Compare reduced-order models and physics-informed neural networks (Raissi et al., 2019) as a middle path.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="glossary">
+  <div class="wrap">
+    <div class="kicker">11 · Glossary</div>
+    <h2>Key terms</h2>
+    <dl class="gloss" id="gloss"></dl>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="refs">
+  <div class="wrap">
+    <div class="kicker">12 · References</div>
+    <h2>Further reading</h2>
+    <div class="refs">
+      <p>Glaessgen, E., &amp; Stargel, D. (2012). The digital twin paradigm for future NASA and U.S. Air Force vehicles. In <i>53rd AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics and Materials Conference</i> (AIAA 2012-1818). American Institute of Aeronautics and Astronautics. <a href="https://doi.org/10.2514/6.2012-1818">https://doi.org/10.2514/6.2012-1818</a></p>
+      <p>Grieves, M., &amp; Vickers, J. (2017). Digital twin: Mitigating unpredictable, undesirable emergent behavior in complex systems. In F.-J. Kahlen, S. Flumerfelt, &amp; A. Alves (Eds.), <i>Transdisciplinary perspectives on complex systems</i> (pp. 85–113). Springer. <a href="https://doi.org/10.1007/978-3-319-38756-7_4">https://doi.org/10.1007/978-3-319-38756-7_4</a></p>
+      <p>Kritzinger, W., Karner, M., Traar, G., Henjes, J., &amp; Sihn, W. (2018). Digital twin in manufacturing: A categorical literature review and classification. <i>IFAC-PapersOnLine, 51</i>(11), 1016–1022. <a href="https://doi.org/10.1016/j.ifacol.2018.08.474">https://doi.org/10.1016/j.ifacol.2018.08.474</a></p>
+      <p>National Academies of Sciences, Engineering, and Medicine. (2024). <i>Foundational research gaps and future directions for digital twins</i>. The National Academies Press. <a href="https://doi.org/10.17226/26894">https://doi.org/10.17226/26894</a></p>
+      <p>Raissi, M., Perdikaris, P., &amp; Karniadakis, G. E. (2019). Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations. <i>Journal of Computational Physics, 378</i>, 686–707. <a href="https://doi.org/10.1016/j.jcp.2018.10.045">https://doi.org/10.1016/j.jcp.2018.10.045</a></p>
+      <p>Rasheed, A., San, O., &amp; Kvamsdal, T. (2020). Digital twin: Values, challenges and enablers from a modeling perspective. <i>IEEE Access, 8</i>, 21980–22012. <a href="https://doi.org/10.1109/ACCESS.2020.2970143">https://doi.org/10.1109/ACCESS.2020.2970143</a></p>
+      <p>Tao, F., Zhang, H., Liu, A., &amp; Nee, A. Y. C. (2019). Digital twin in industry: State-of-the-art. <i>IEEE Transactions on Industrial Informatics, 15</i>(4), 2405–2415. <a href="https://doi.org/10.1109/TII.2018.2873186">https://doi.org/10.1109/TII.2018.2873186</a></p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b style="color:var(--text)">Rajan Kumar V K</b>, D.Sc. (Tech.) in Industrial Engineering and Management, LUT University. Doctoral research on performance management with digital twins, AI and IoT in industrial companies. <a href="https://www.linkedin.com/in/rajan-kumar-v-k-0a541799/">LinkedIn</a></p>
+    <p class="small">Free to use for teaching with attribution. The bridge in the live lab is a simplified single-mode model for learning, not a design tool. Video, page and lab source code are in the <a href="https://github.com/Rajan56/concept-of-digital-twin">GitHub repository</a>.</p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
